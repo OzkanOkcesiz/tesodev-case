@@ -62,8 +62,14 @@ body {
   margin: 0;
   height: 100vh;
   font-family: 'Inter', sans-serif;
+  display: flex;
+  flex-direction: column;
 }
 
 a {
   text-decoration: none;
+}
+
+li {
+  list-style-type: none;
 }

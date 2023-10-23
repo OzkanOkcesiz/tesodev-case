@@ -13,7 +13,7 @@ import IconSearch from './icons/IconSearch.vue';
                     </span>
                     <input placeholder="Name Surname or Company" type="text" value="">
                 </div>
-                <a class="search-link" href="/List?q=">Search</a>
+                <a class="search-link" href="/listpage?q=">Search</a>
             </div>
         </div>
     </div>
