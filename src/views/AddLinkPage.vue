@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import IconArrow from '@/components/icons/IconArrow.vue';
+import AddLinkForm from '@/components/AddLinkForm.vue';
 </script>
 
 <template>
@@ -11,6 +12,7 @@ import IconArrow from '@/components/icons/IconArrow.vue';
         Return to List Page
       </a>
     </div>
+    <AddLinkForm />
   </div>
 </template>
 
