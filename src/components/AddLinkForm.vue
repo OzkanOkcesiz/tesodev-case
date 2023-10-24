@@ -3,7 +3,7 @@ import { ref, reactive, computed } from 'vue';
 
 const isShow = ref(false);
 const formRef = ref<HTMLFormElement | null>(null);
-const formDefaultValues = reactive({
+const formDefaultValues = {
     nameSurname: '',
     country: '',
     city: '',
@@ -14,7 +14,7 @@ const formDefaultValues = reactive({
         city: false,
         email: false,
     },
-});
+};
 
 const form = reactive(formDefaultValues);
 
@@ -58,7 +58,11 @@ const showAddButton = computed(() => {
         form.error.country ||
         form.error.city ||
         form.error.email
-    ) && form.nameSurname.length > 2 && form.country.length > 2 && form.city.length > 2 && /^\w+([\\.-]?\w+)*@\w+([\\.-]?\w+)*(\.\w{2,3})+$/.test(form.email);
+    )
+     && form.nameSurname.length > 2
+     && form.country.length > 2 
+     && form.city.length > 2 
+     && /^\w+([\\.-]?\w+)*@\w+([\\.-]?\w+)*(\.\w{2,3})+$/.test(form.email);
 });
 
 const addData = () => {
@@ -82,6 +86,7 @@ const handleSubmit = () => {
     console.log(formDefaultValues);
 }
 </script>
+
 <template>
     <div class="form-box">
         <form class="add-link-form" @submit.prevent="handleSubmit" ref="formRef">
