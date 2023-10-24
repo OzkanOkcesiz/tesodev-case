@@ -17,11 +17,6 @@ if (!data) {
 
   localStorage.setItem('data', JSON.stringify(result))
 }
-else {
-  const parseData: RootObject = JSON.parse(data)
-
-  console.log(parseData);
-}
 </script>
 
 <template>

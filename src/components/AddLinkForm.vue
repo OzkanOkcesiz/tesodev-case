@@ -16,7 +16,7 @@ const formDefaultValues = {
     },
 };
 
-const form = reactive(formDefaultValues);
+const form:any = reactive(formDefaultValues);
 
 const validateForm = (e: Event) => {
     const target = e.target as HTMLInputElement;
@@ -59,10 +59,10 @@ const showAddButton = computed(() => {
         form.error.city ||
         form.error.email
     )
-     && form.nameSurname.length > 2
-     && form.country.length > 2 
-     && form.city.length > 2 
-     && /^\w+([\\.-]?\w+)*@\w+([\\.-]?\w+)*(\.\w{2,3})+$/.test(form.email);
+        && form.nameSurname.length > 2
+        && form.country.length > 2
+        && form.city.length > 2
+        && /^\w+([\\.-]?\w+)*@\w+([\\.-]?\w+)*(\.\w{2,3})+$/.test(form.email);
 });
 
 const addData = () => {
@@ -85,38 +85,23 @@ const handleSubmit = () => {
     console.log(form);
     console.log(formDefaultValues);
 }
+
+const inputFields = [
+    { name: 'nameSurname', label: 'Name Surname', type: 'text' },
+    { name: 'country', label: 'Country', type: 'text' },
+    { name: 'city', label: 'City', type: 'text' },
+    { name: 'email', label: 'Email', type: 'text' }
+];
 </script>
 
 <template>
     <div class="form-box">
         <form class="add-link-form" @submit.prevent="handleSubmit" ref="formRef">
-            <div class="input-box">
-                <label for="nameSurname">Name Surname</label>
-                <input v-model="form.nameSurname" type="text" name="nameSurname" @input="validateForm"
-                    @blur="validateForm" />
+            <div v-for="field in inputFields" :key="field.name" class="input-box">
+                <label :for="field.name">{{ field.label }}</label>
+                <input v-model="form[field.name]" :type="field.type" :name="field.name" @input="validateForm" @blur="validateForm" />
                 <div class="message">
-                    <span class="error" v-if="form.error.nameSurname">Name Surname is required</span>
-                </div>
-            </div>
-            <div class="input-box">
-                <label for="country">Country</label>
-                <input v-model="form.country" type="text" name="country" @input="validateForm" @blur="validateForm" />
-                <div class="message">
-                    <span class="error" v-if="form.error.country">Country is required</span>
-                </div>
-            </div>
-            <div class="input-box">
-                <label for="city">City</label>
-                <input v-model="form.city" type="text" name="city" @input="validateForm" @blur="validateForm" />
-                <div class="message">
-                    <span class="error" v-if="form.error.city">City is required</span>
-                </div>
-            </div>
-            <div class="input-box">
-                <label for="email">Email</label>
-                <input v-model="form.email" type="text" name="email" @input="validateForm" @blur="validateForm" />
-                <div class="message">
-                    <span class="error" v-if="form.error.email">Email is required</span>
+                    <span class="error" v-if="form.error[field.name]">{{ field.label }} is required</span>
                 </div>
             </div>
             <div class="btn-box" v-if="showAddButton">
