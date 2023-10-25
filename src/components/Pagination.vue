@@ -6,45 +6,40 @@ import { ref, computed, watch, onMounted } from 'vue';
 
 interface Props {
   currentPage: number;
-  totalItems: number;
   itemsPerPage: number;
-  handleChange?: (page: number) => void;
+  totalItems: number;
 }
 
 const emit = defineEmits(['handleChange']);
 
 const props = withDefaults(defineProps<Props>(), {
   currentPage: 1,
-  itemsPerPage: 10,
-  handleChange: () => { },
+  itemsPerPage: 5,
 });
 
-const currentPage = ref(props.currentPage);
+const currentPage = ref(getQuerystring('page') || 1);
+const perPage = ref(props.itemsPerPage);
 
-const DOTS = ref("...");
+const DOTS = ref('...');
 
 const calculatePageCount = computed(() => {
-  const perPage: number = Number(props.itemsPerPage);
-  return Math.ceil((props.totalItems || 1) / perPage);
+  return Math.ceil(props.totalItems / perPage.value);
 });
 
 const displayedPages = computed(() => {
-  const siblingCount = 1;
+  const siblingCount = 2;
 
   const totalPageNumbers = siblingCount + 5;
 
+  /*
+      Case 1:
+      If the number of pages is less than the page numbers we want to show in our
+      paginationComponent, we return the range [1..totalPageCount]
+    */
   if (totalPageNumbers >= calculatePageCount.value) {
     currentPage.value = 1;
-    router.replace({
-      query: {
-        ...getQuerystring(),
-        page: 1,
-      },
-    });
-    return range(
-      1,
-      calculatePageCount.value === 0 ? 1 : calculatePageCount.value
-    );
+    emit('handleChange', currentPage.value);
+    return range(1, calculatePageCount.value);
   }
 
   const leftSiblingIndex = Math.max(currentPage.value - siblingCount, 1);
@@ -53,21 +48,21 @@ const displayedPages = computed(() => {
     calculatePageCount.value
   );
 
-  const shouldShowLeftDots = leftSiblingIndex > 2;
-  const shouldShowRightDots = rightSiblingIndex < calculatePageCount.value - 2;
+  const shouldShowLeftDots = leftSiblingIndex > 4;
+  const shouldShowRightDots = rightSiblingIndex < calculatePageCount.value - 3;
 
   const firstPageIndex = 1;
   const lastPageIndex = calculatePageCount.value;
 
   if (!shouldShowLeftDots && shouldShowRightDots) {
-    let leftItemCount = 3 + 2 * siblingCount;
+    let leftItemCount = 2 + 2 * siblingCount;
     let leftRange = range(1, leftItemCount);
 
     return [...leftRange, DOTS.value, calculatePageCount.value];
   }
 
   if (shouldShowLeftDots && !shouldShowRightDots) {
-    let rightItemCount = 3 + 2 * siblingCount;
+    let rightItemCount = 2 + 2 * siblingCount;
     let rightRange = range(
       calculatePageCount.value - rightItemCount + 1,
       calculatePageCount.value
@@ -77,7 +72,13 @@ const displayedPages = computed(() => {
 
   if (shouldShowLeftDots && shouldShowRightDots) {
     let middleRange = range(leftSiblingIndex, rightSiblingIndex);
-    return [firstPageIndex, DOTS.value, ...middleRange, DOTS.value, lastPageIndex];
+    return [
+      firstPageIndex,
+      DOTS.value,
+      ...middleRange,
+      DOTS.value,
+      lastPageIndex,
+    ];
   }
 });
 
@@ -87,10 +88,12 @@ const changePage = (newPage: number) => {
     router.replace({
       query: {
         ...getQuerystring(),
-        page: currentPage.value,
+        page: newPage,
       },
     });
-    props?.handleChange(newPage);
+    // props?.handleChange(newPage);
+
+    emit('handleChange', newPage);
   }
 };
 
@@ -98,13 +101,6 @@ const range = (start: any, end: any) => {
   let length = end - start + 1;
   return Array.from({ length }, (_, idx) => idx + start);
 };
-
-watch(
-  () => currentPage.value,
-  (newVal) => {
-    emit('handleChange', newVal);
-  }
-);
 
 onMounted(() => {
   if (getQuerystring('page')) {
@@ -119,22 +115,31 @@ onMounted(() => {
       page: currentPage.value,
     },
   });
-
-  props?.handleChange(currentPage.value);
+  emit('handleChange', currentPage.value);
+  // props?.handleChange(currentPage.value);
 });
 </script>
 
 <template>
   <div class="pagination-box">
-    <div class="previous-next" >
-      <button class="page-number" @click="changePage(currentPage - 1)" :disabled="currentPage === 1">
+    <div class="previous-next">
+      <button
+        class="page-number"
+        @click="changePage(currentPage - 1)"
+        :disabled="currentPage === 1"
+      >
         Previous
       </button>
     </div>
     <div class="pagination-ul">
       <template v-for="(page, index) in displayedPages">
-        <button v-if="String(page) !== DOTS" :key="page" @click="changePage(Number(page))" class="page-number"
-          :class="{ active: currentPage == page }">
+        <button
+          v-if="String(page) !== DOTS"
+          :key="page"
+          @click="changePage(Number(page))"
+          class="page-number"
+          :class="{ active: currentPage == page }"
+        >
           {{ page }}
         </button>
         <div v-else>
@@ -143,7 +148,11 @@ onMounted(() => {
       </template>
     </div>
     <div class="previous-next">
-      <button class="page-number" @click="changePage(currentPage + 1)" :disabled="currentPage === calculatePageCount">
+      <button
+        class="page-number"
+        @click="changePage(currentPage + 1)"
+        :disabled="currentPage === calculatePageCount"
+      >
         Next
       </button>
     </div>
@@ -161,7 +170,6 @@ onMounted(() => {
   display: flex;
   align-items: center;
 }
-
 
 .page-number {
   /* padding: 4px 8px; */
@@ -197,6 +205,5 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-
 }
 </style>

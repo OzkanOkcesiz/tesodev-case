@@ -64,7 +64,13 @@ onMounted(() => {
 <template>
   <div class="main-left">
     <div class="list-container">
-      <a :href="item.website" target="_blank" class="person-box" v-for="item in paginatedData" :key="item.id">
+      <a
+        :href="item.website"
+        target="_blank"
+        class="person-box"
+        v-for="item in paginatedData"
+        :key="item.id"
+      >
         <div class="person-content">
           <div class="person-content-left">
             <IconLocation class="location-icon" />
@@ -80,8 +86,13 @@ onMounted(() => {
         </div>
       </a>
     </div>
-    <Pagination v-if="paginationProps.data.length > 0" :currentPage="paginationProps.currentPage"
-      :totalItems="searchedData.length" :itemsPerPage="paginationProps.itemsPerPage" @handleChange="changePage" />
+    <Pagination
+      v-if="searchedData.length > 0"
+      :currentPage="paginationProps.currentPage"
+      :totalItems="searchedData.length"
+      :itemsPerPage="paginationProps.itemsPerPage"
+      @handleChange="changePage"
+    />
   </div>
   <div class="main-right">
     <SortButton />

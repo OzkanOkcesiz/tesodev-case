@@ -1,276 +1,361 @@
 <script setup lang="ts">
-import IconXCircle from '@/components/icons/IconXCircle.vue'
+import Toast from '@/components/Toast.vue';
 import { ref, reactive, computed } from 'vue';
+import axios from 'axios';
+let inputFields = reactive([
+  {
+    label: 'Name Surname',
+    required: true,
+    maskRegex: /^[a-zA-ZğüşıöçĞÜŞİÖÇ\s]*$/,
+    inputProps: { name: 'nameSurname', placeholder: 'Name Surname', value: '' },
+  },
+  {
+    label: 'Country',
+    required: true,
+    maskRegex: /^[a-zA-ZğüşıöçĞÜŞİÖÇ\s]*$/,
 
-const isShow = ref(false);
-const formRef = ref<HTMLFormElement | null>(null);
-const formDefaultValues = {
-    nameSurname: '',
-    country: '',
-    city: '',
-    email: '',
-    url: '',
-    error: {
-        nameSurname: false,
-        country: false,
-        city: false,
-        email: false,
-        url: false
-    },
-};
+    inputProps: { name: 'country', placeholder: 'Country', value: '' },
+  },
+  {
+    label: 'City',
+    required: true,
+    maskRegex: /^[a-zA-ZğüşıöçĞÜŞİÖÇ\s]*$/,
 
-const form: any = reactive(formDefaultValues);
+    inputProps: { name: 'city', placeholder: 'City', value: '' },
+  },
+  {
+    label: 'Email',
+    required: true,
+    inputProps: { name: 'email', placeholder: 'Email', value: '' },
+  },
+  {
+    label: 'WebSite',
+    required: true,
+    inputProps: { name: 'url', placeholder: 'WebSite', value: '' },
+  },
+]);
 
-const validateForm = (e: Event) => {
-    const target = e.target as HTMLInputElement;
-    const { name, value } = target;
-    const error = form.error;
-    switch (name) {
-        case 'nameSurname':
-            error.nameSurname = value.length < 3;
-            break;
-        case 'country':
-            error.country = value.length < 3;
-            break;
-        case 'city':
-            error.city = value.length < 3;
-            break;
-        case 'email':
-            error.email = value.length < 3 || !/^\w+([\\.-]?\w+)*@\w+([\\.-]?\w+)*(\.\w{2,3})+$/.test(value);
-            break;
-        case 'url':
-            error.url = value.length < 3 || !/^(ftp|http|https):\/\/[^ "]+$/.test(value);
-            break;
-        default:
-            break;
-    }
-};
-
-
-
-const showAddButton = computed(() => {
-    const isEmailValid = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(form.email);
-    const isURLValid = /^(ftp|http|https):\/\/[^ "]+$/.test(form.url);
-
-
-    return !(
-        form.error.nameSurname ||
-        form.error.country ||
-        form.error.city ||
-        form.error.email ||
-        form.error.url
-    )
-        && form.nameSurname.length > 2
-        && form.country.length > 2
-        && form.city.length > 2
-        && isEmailValid
-        && isURLValid
+let inputErrors: any = reactive({
+  nameSurname: {
+    error: false,
+    message: '',
+  },
+  country: {
+    error: false,
+    message: '',
+  },
+  city: {
+    error: false,
+    message: '',
+  },
+  email: {
+    error: false,
+    message: '',
+  },
+  url: {
+    error: false,
+    message: '',
+  },
 });
 
-const addData = () => {
-    if (form.nameSurname.search(/^[a-zA-ZğĞüÜşŞıİöÖçÇ]{2,40}( [a-zA-ZğĞüÜşŞıİöÖçÇ]{2,40})+$/) === -1) {
-        isShow.value = true;
+const toast = ref({
+  title: '',
+  message: '',
+  type: '',
+});
 
-        setTimeout(() => {
-            isShow.value = false
-        }, 2000);
-    } else if (!isShow.value) {
-        console.log('Adding data to the console:', form.nameSurname, form.country, form.city, 'Tesodev', form.email, form.url);
-        if (formRef.value) {
-            formRef.value.reset();
-        }
-        Object.assign(form, formDefaultValues);
-    }
-};
+const loading = ref(false);
 
 const handleSubmit = () => {
-    console.log('form',form);
-    console.log(formDefaultValues);
-}
+  loading.value = true;
+  const getData = localStorage.getItem('data');
+  const data = getData ? JSON.parse(getData) : [];
+  const values = inputFields.reduce((acc: any, field: any) => {
+    acc[field.inputProps.name] = field.inputProps.value;
+    return acc;
+  }, {});
 
-const inputFields = [
-    { name: 'nameSurname', label: 'Name Surname', type: 'text' },
-    { name: 'country', label: 'Country', type: 'text' },
-    { name: 'city', label: 'City', type: 'text' },
-    { name: 'email', label: 'Email', type: 'text' },
-    { name: 'url', label: 'WebSite', type: 'text' }
-];
+  console.log(values);
+  try {
+    axios
+      .get(`https://ulvis.net/API/write/get?url=${values['url']}&private=1`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
+      })
+      .then((res) => {
+        localStorage.setItem(
+          'data',
+          JSON.stringify([
+            ...data,
+            { ...values, id: new Date().getTime, url: res.data.url },
+          ])
+        );
+
+        toast.value = {
+          title: 'Success',
+          message: 'Link added successfully',
+          type: 'success',
+        };
+      });
+  } catch (error: any) {
+    toast.value = {
+      title: 'Error',
+      message: error.message || 'Something went wrong',
+      type: 'error',
+    };
+  } finally {
+    loading.value = false;
+  }
+};
+
+const handleCloseToast = () => {
+  toast.value = {
+    title: '',
+    message: '',
+    type: '',
+  };
+};
+
+const handleChangeInput = (e: any, field: any) => {
+  const { name, value } = e.target;
+  inputValidations(name, value, field);
+};
+
+const preventSpace = (e: any, mask?: any) => {
+  if (
+    (e.keyCode === 32 && e.target.value.trim() === '') ||
+    (mask && !mask.test(e.key))
+  ) {
+    e.preventDefault();
+  }
+};
+const inputValidations = (name: string, value: string, field: any) => {
+  const emailRegex = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+  const urlRegex = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/;
+  if (name === 'nameSurname') {
+    if (field?.required && value.length === 0) {
+      inputErrors.nameSurname.error = true;
+      inputErrors.nameSurname.message = 'Name and surname is required';
+    } else if (value.split(' ').filter((word) => word !== '').length < 2) {
+      inputErrors.nameSurname.error = true;
+      inputErrors.nameSurname.message =
+        'Name and surname should contain at least 2 words';
+    } else if (!(value.length >= 4 && value.length <= 60)) {
+      inputErrors.nameSurname.error = true;
+      inputErrors.nameSurname.message =
+        'Name and surname must be between 4 and 60 characters';
+    } else {
+      inputErrors.nameSurname.error = false;
+      inputErrors.nameSurname.message = '';
+    }
+  } else if (name === 'country') {
+    if (field?.required && value.length === 0) {
+      inputErrors.country.error = true;
+      inputErrors.country.message = 'Country is required';
+    } else if (!(value.length >= 2 && value.length <= 40)) {
+      inputErrors.country.error = true;
+      inputErrors.country.message =
+        'Country must be between 2 and 40 characters';
+    } else {
+      inputErrors.country.error = false;
+      inputErrors.country.message = '';
+    }
+  } else if (name === 'city') {
+    if (field?.required && value.length === 0) {
+      inputErrors.city.error = true;
+      inputErrors.city.message = 'City is required';
+    } else if (!(value.length >= 2 && value.length <= 40)) {
+      inputErrors.city.error = true;
+      inputErrors.city.message = 'City must be between 2 and 40 characters';
+    } else {
+      inputErrors.city.error = false;
+      inputErrors.city.message = '';
+    }
+  } else if (name === 'email') {
+    if (field?.required && value.length === 0) {
+      inputErrors.email.error = true;
+      inputErrors.email.message = 'Email is required';
+    } else if (!emailRegex.test(value)) {
+      inputErrors.email.error = true;
+      inputErrors.email.message = 'Email is not valid';
+    } else {
+      inputErrors.email.error = false;
+      inputErrors.email.message = '';
+    }
+  } else if (name === 'url') {
+    if (field?.required && value.length === 0) {
+      inputErrors.url.error = true;
+      inputErrors.url.message = 'WebSite is required';
+    } else if (!urlRegex.test(value)) {
+      inputErrors.url.error = true;
+      inputErrors.url.message = 'WebSite is not valid';
+    } else {
+      inputErrors.url.error = false;
+      inputErrors.url.message = '';
+    }
+  }
+};
+
+const submitButtonDisabled = computed(() => {
+  if (inputFields.some((field: any) => field.inputProps.value.length === 0)) {
+    return true;
+  }
+  return Object.values(inputErrors).some((field: any) => field.error);
+});
 </script>
 
 <template>
-    <div class="form-box">
-        <form class="add-link-form" @submit.prevent="handleSubmit" ref="formRef">
-            <div v-for="field in inputFields" :key="field.name" class="input-box">
-                <label :for="field.name">{{ field.label }}</label>
-                <input v-model="form[field.name]" :type="field.type" :name="field.name" @input="validateForm"
-                    @blur="validateForm" />
-                <div class="message">
-                    <span class="error" v-if="form.error[field.name]">{{ field.label }} is required</span>
-                </div>
-            </div>
-            <div class="btn-box">
-                <button class="add-btn" :disabled="!showAddButton" @click="addData">Add</button>
-            </div>
-        </form>
-        <div class="message-box">
-            <div class="message-content" v-if="isShow">
-                <button class="close-btn" @click="isShow = false">
-                    <IconXCircle />
-                </button>
-                <div class="error-title">Error while adding link element</div>
-                <div class="error">Error</div>
-                <div class="error-message">Name and surname should contain at least 2 words</div>
-            </div>
+  <div class="form-box">
+    <form class="add-link-form" @submit.prevent="handleSubmit" ref="formRef">
+      <div
+        v-for="(field, index) in inputFields"
+        :key="index"
+        class="input-box"
+        :class="{ error: inputErrors[field.inputProps.name].error }"
+      >
+        <label>
+          <div>
+            <span v-if="field.required" style="color: red">*</span
+            >{{ field.label }}
+          </div>
+
+          <input
+            v-model="field.inputProps.value"
+            :name="field.inputProps.name"
+            :placeholder="field.inputProps.placeholder"
+            @input="(e:any) => handleChangeInput(e,field)"
+            @keydown="(e:any) => preventSpace(e, field?.maskRegex)"
+          />
+        </label>
+        <div class="message">
+          <span class="error" v-if="inputErrors[field.inputProps.name].error">{{
+            inputErrors[field.inputProps.name].message
+          }}</span>
         </div>
-    </div>
+      </div>
+      <div class="btn-box">
+        <button
+          :disabled="submitButtonDisabled || loading"
+          class="add-btn"
+          type="submit"
+        >
+          Add
+        </button>
+      </div>
+    </form>
+
+    <Toast
+      v-if="Object.values(toast).some((value) => value)"
+      title="dawdawdaw"
+      message="dawdawdawdawdawdawdaw"
+      type="error"
+      @closeIcon="handleCloseToast"
+    />
+  </div>
 </template>
 <style scoped>
 .form-box {
-    display: flex;
-    justify-content: center;
+  display: flex;
+  justify-content: center;
 }
 
 .add-link-form {
-    margin-bottom: 20px;
-    width: 590px;
+  margin-bottom: 20px;
+  width: 590px;
 }
 
 .input-box {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
 }
 
 .input-box label {
-    font-family: 'Roboto';
-    font-style: normal;
-    font-weight: 700;
-    font-size: 18px;
-    line-height: 21px;
-    color: #686868;
-    margin-bottom: 10px;
-    margin-left: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 21px;
+  color: #686868;
+  margin-bottom: 10px;
+  margin-left: 5px;
 }
 
 .input-box input {
-    height: 44px;
-    padding: 0 20px;
-    font-family: 'Roboto';
-    font-style: normal;
-    font-weight: 700;
-    font-size: 18px;
-    line-height: 21px;
-    border: 1.5px solid #484848;
-    border-radius: 12px;
-    outline: #204080;
-    transition: all 0.3s ease-in-out;
+  height: 44px;
+  padding: 0 20px;
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 21px;
+  border: 1.5px solid #484848;
+  border-radius: 12px;
+  outline: #204080;
+  transition: all 0.3s ease-in-out;
 }
 
 .input-box input::placeholder {
-    color: rgba(100, 100, 100, 0.5);
+  color: rgba(100, 100, 100, 0.5);
 }
 
 .input-box input:hover,
 .input-box input:focus {
-    outline: #204080;
-    border: 1.5px solid #20408090;
-    box-shadow: #20408090 0 0 1.5px 2px;
+  outline: #204080;
+  border: 1.5px solid #20408090;
+  box-shadow: #20408090 0 0 1.5px 2px;
+}
+
+.input-box.error input {
+  border: 1.5px solid #ff0000;
+  outline: #ff0000;
+  box-shadow: #ff0000 0 0 1.5px 2px;
 }
 
 .input-box .message {
-    height: 21px;
-    padding: 5px 10px;
-    font-weight: 700;
-    font-size: 16px;
-    line-height: 21px;
-    color: #FF0000;
+  height: 21px;
+  padding: 5px 10px;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 21px;
+  color: #ff0000;
 }
 
 .btn-box {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    justify-content: center;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
 }
 
 .add-btn {
-    width: 135px;
-    height: 46px;
-    background: #204080;
-    border-radius: 12px;
-    font-weight: 700;
-    font-size: 18px;
-    line-height: 21px;
-    text-align: center;
-    border: none;
-    color: #fff;
-    transition: all 0.3s ease-in-out;
+  width: 135px;
+  height: 46px;
+  background: #204080;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 21px;
+  text-align: center;
+  border: none;
+  color: #fff;
+  transition: all 0.3s ease-in-out;
 }
 
 .add-btn:hover {
-    background: #4F75C2;
-    color: #fff;
+  background: #4f75c2;
+  color: #fff;
 }
 
 .add-btn:disabled {
-    background: #e2e2e2;
-    color: #484848;
-    cursor: default;
-}
-
-.message-box {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    width: 375px;
-    margin-right: 20px;
-    margin-bottom: 30px;
-}
-
-.message-content {
-    display: flex;
-    flex-direction: column;
-    background: #C4C4C4;
-    border-radius: 8px;
-    padding: 5px 10px;
-}
-
-.close-btn {
-    display: flex;
-    align-self: flex-end;
-    padding: 5px;
-    background: none;
-    border: none;
-}
-
-.error-title {
-    font-weight: 700;
-    font-size: 14px;
-    line-height: 36px;
-    color: #090A0A;
-}
-
-.message-box .message-content .error {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    align-self: flex-end;
-    padding: 8px 16px;
-    background: rgba(255, 0, 0, 0.7);
-    ;
-    border-radius: 48px;
-    margin-right: 30px;
-    font-weight: 500;
-    font-size: 16px;
-    line-height: 16px;
-    color: #FFFFFF;
-}
-
-.error-message {
-    font-weight: 400;
-    font-size: 13px;
-    line-height: 24px;
-    color: #090A0A;
-    padding-right: 30%;
+  background: #e2e2e2;
+  color: #484848;
+  cursor: default;
 }
 </style>
