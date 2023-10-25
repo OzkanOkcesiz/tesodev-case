@@ -1,34 +1,3 @@
-<template>
-  <div class="pagination-box">
-    <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1">
-      Önceki
-    </button>
-    <div class="pagination-ul">
-      <template v-for="(page, index) in displayedPages">
-        <button
-          v-if="String(page) !== DOTS"
-          :key="page"
-          @click="changePage(Number(page))"
-          class="page-number"
-          :class="{ active: currentPage == page }"
-        >
-          {{ page }}
-        </button>
-        <div v-else>
-          {{ DOTS }}
-        </div>
-      </template>
-    </div>
-
-    <button
-      @click="changePage(currentPage + 1)"
-      :disabled="currentPage === calculatePageCount"
-    >
-      Sonraki
-    </button>
-  </div>
-</template>
-
 <script setup lang="ts">
 import router from '@/router';
 import { getQuerystring } from '@/utils';
@@ -47,12 +16,12 @@ const emit = defineEmits(['handleChange']);
 const props = withDefaults(defineProps<Props>(), {
   currentPage: 1,
   itemsPerPage: 10,
-  handleChange: () => {},
+  handleChange: () => { },
 });
 
 const currentPage = ref(props.currentPage);
 
-const DOTS = ref('...');
+const DOTS = ref("...");
 
 const calculatePageCount = computed(() => {
   const perPage: number = Number(props.itemsPerPage);
@@ -94,7 +63,7 @@ const displayedPages = computed(() => {
     let leftItemCount = 3 + 2 * siblingCount;
     let leftRange = range(1, leftItemCount);
 
-    return [...leftRange, DOTS, calculatePageCount.value];
+    return [...leftRange, DOTS.value, calculatePageCount.value];
   }
 
   if (shouldShowLeftDots && !shouldShowRightDots) {
@@ -103,12 +72,12 @@ const displayedPages = computed(() => {
       calculatePageCount.value - rightItemCount + 1,
       calculatePageCount.value
     );
-    return [firstPageIndex, DOTS, ...rightRange];
+    return [firstPageIndex, DOTS.value, ...rightRange];
   }
 
   if (shouldShowLeftDots && shouldShowRightDots) {
     let middleRange = range(leftSiblingIndex, rightSiblingIndex);
-    return [firstPageIndex, DOTS, ...middleRange, DOTS, lastPageIndex];
+    return [firstPageIndex, DOTS.value, ...middleRange, DOTS.value, lastPageIndex];
   }
 });
 
@@ -155,6 +124,31 @@ onMounted(() => {
 });
 </script>
 
+<template>
+  <div class="pagination-box">
+    <div class="previous-next" >
+      <button class="page-number" @click="changePage(currentPage - 1)" :disabled="currentPage === 1">
+        Previous
+      </button>
+    </div>
+    <div class="pagination-ul">
+      <template v-for="(page, index) in displayedPages">
+        <button v-if="String(page) !== DOTS" :key="page" @click="changePage(Number(page))" class="page-number"
+          :class="{ active: currentPage == page }">
+          {{ page }}
+        </button>
+        <div v-else>
+          {{ DOTS }}
+        </div>
+      </template>
+    </div>
+    <div class="previous-next">
+      <button class="page-number" @click="changePage(currentPage + 1)" :disabled="currentPage === calculatePageCount">
+        Next
+      </button>
+    </div>
+  </div>
+</template>
 <style scoped>
 .pagination-box {
   display: flex;
@@ -168,13 +162,8 @@ onMounted(() => {
   align-items: center;
 }
 
-.pagination-ul .page-number:disabled {
-  background: #e2e2e2;
-  color: #484848;
-  cursor: default;
-}
 
-.pagination-ul .page-number {
+.page-number {
   /* padding: 4px 8px; */
   background: #ffffff;
   border: 1px solid #484848;
@@ -197,9 +186,17 @@ onMounted(() => {
   cursor: pointer;
 }
 
+.page-number:disabled {
+  background: #e2e2e2;
+  color: #484848;
+  cursor: default;
+}
+
 .previous-next button {
   width: 85px;
   display: flex;
   justify-content: center;
+  align-items: center;
+
 }
 </style>

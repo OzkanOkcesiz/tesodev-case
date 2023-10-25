@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, defineProps, defineEmits } from 'vue';
+import { ref } from 'vue';
 import IconSort from '@/components/icons/IconSort.vue';
 import router from '@/router';
 import { getQuerystring } from '@/utils';
@@ -69,6 +69,7 @@ const selectSort = (type: string) => {
 }
 
 .dropdown-content {
+  width: max-content;
   display: flex;
   flex-direction: column;
   align-items: flex-start;

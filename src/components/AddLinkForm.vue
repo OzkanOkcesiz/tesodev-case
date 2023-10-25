@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import IconXCircle from '@/components/icons/IconXCircle.vue'
 import { ref, reactive, computed } from 'vue';
 
 const isShow = ref(false);
@@ -8,15 +9,17 @@ const formDefaultValues = {
     country: '',
     city: '',
     email: '',
+    url: '',
     error: {
         nameSurname: false,
         country: false,
         city: false,
         email: false,
+        url: false
     },
 };
 
-const form:any = reactive(formDefaultValues);
+const form: any = reactive(formDefaultValues);
 
 const validateForm = (e: Event) => {
     const target = e.target as HTMLInputElement;
@@ -35,45 +38,44 @@ const validateForm = (e: Event) => {
         case 'email':
             error.email = value.length < 3 || !/^\w+([\\.-]?\w+)*@\w+([\\.-]?\w+)*(\.\w{2,3})+$/.test(value);
             break;
+        case 'url':
+            error.url = value.length < 3 || !/^(ftp|http|https):\/\/[^ "]+$/.test(value);
+            break;
         default:
             break;
     }
 };
 
-const getDateFormat = () => {
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    let mm: any = today.getMonth() + 1;
-    let dd: any = today.getDate();
 
-    if (dd < 10) dd = '0' + dd;
-    if (mm < 10) mm = '0' + mm;
-
-    return `${dd}/${mm}/${yyyy}`;
-};
 
 const showAddButton = computed(() => {
+    const isEmailValid = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(form.email);
+    const isURLValid = /^(ftp|http|https):\/\/[^ "]+$/.test(form.url);
+
+
     return !(
         form.error.nameSurname ||
         form.error.country ||
         form.error.city ||
-        form.error.email
+        form.error.email ||
+        form.error.url
     )
         && form.nameSurname.length > 2
         && form.country.length > 2
         && form.city.length > 2
-        && /^\w+([\\.-]?\w+)*@\w+([\\.-]?\w+)*(\.\w{2,3})+$/.test(form.email);
+        && isEmailValid
+        && isURLValid
 });
 
 const addData = () => {
-    if (form.nameSurname.search(/^[a-zA-Z]{2,40}( [a-zA-Z]{2,40})+$/) === -1) {
+    if (form.nameSurname.search(/^[a-zA-ZğĞüÜşŞıİöÖçÇ]{2,40}( [a-zA-ZğĞüÜşŞıİöÖçÇ]{2,40})+$/) === -1) {
         isShow.value = true;
 
         setTimeout(() => {
             isShow.value = false
         }, 2000);
     } else if (!isShow.value) {
-        console.log('Adding data to the console:', form.nameSurname, 'Tesodev', form.email, getDateFormat(), form.country, form.city);
+        console.log('Adding data to the console:', form.nameSurname, form.country, form.city, 'Tesodev', form.email, form.url);
         if (formRef.value) {
             formRef.value.reset();
         }
@@ -82,7 +84,7 @@ const addData = () => {
 };
 
 const handleSubmit = () => {
-    console.log(form);
+    console.log('form',form);
     console.log(formDefaultValues);
 }
 
@@ -90,7 +92,8 @@ const inputFields = [
     { name: 'nameSurname', label: 'Name Surname', type: 'text' },
     { name: 'country', label: 'Country', type: 'text' },
     { name: 'city', label: 'City', type: 'text' },
-    { name: 'email', label: 'Email', type: 'text' }
+    { name: 'email', label: 'Email', type: 'text' },
+    { name: 'url', label: 'WebSite', type: 'text' }
 ];
 </script>
 
@@ -99,18 +102,21 @@ const inputFields = [
         <form class="add-link-form" @submit.prevent="handleSubmit" ref="formRef">
             <div v-for="field in inputFields" :key="field.name" class="input-box">
                 <label :for="field.name">{{ field.label }}</label>
-                <input v-model="form[field.name]" :type="field.type" :name="field.name" @input="validateForm" @blur="validateForm" />
+                <input v-model="form[field.name]" :type="field.type" :name="field.name" @input="validateForm"
+                    @blur="validateForm" />
                 <div class="message">
                     <span class="error" v-if="form.error[field.name]">{{ field.label }} is required</span>
                 </div>
             </div>
-            <div class="btn-box" v-if="showAddButton">
-                <button class="add-btn" @click="addData">Add</button>
+            <div class="btn-box">
+                <button class="add-btn" :disabled="!showAddButton" @click="addData">Add</button>
             </div>
         </form>
         <div class="message-box">
             <div class="message-content" v-if="isShow">
-                <button class="close-btn" @click="isShow = false">X</button>
+                <button class="close-btn" @click="isShow = false">
+                    <IconXCircle />
+                </button>
                 <div class="error-title">Error while adding link element</div>
                 <div class="error">Error</div>
                 <div class="error-message">Name and surname should contain at least 2 words</div>
@@ -204,6 +210,12 @@ const inputFields = [
 .add-btn:hover {
     background: #4F75C2;
     color: #fff;
+}
+
+.add-btn:disabled {
+    background: #e2e2e2;
+    color: #484848;
+    cursor: default;
 }
 
 .message-box {

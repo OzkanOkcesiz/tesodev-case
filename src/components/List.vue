@@ -47,7 +47,6 @@ const paginatedData = computed(() => {
 });
 
 const changePage = (newPage: number) => {
-  console.log(newPage);
   paginationProps.currentPage = newPage;
 };
 
@@ -65,13 +64,7 @@ onMounted(() => {
 <template>
   <div class="main-left">
     <div class="list-container">
-      <a
-        :href="item.website"
-        target="_blank"
-        class="person-box"
-        v-for="item in paginatedData"
-        :key="item.id"
-      >
+      <a :href="item.website" target="_blank" class="person-box" v-for="item in paginatedData" :key="item.id">
         <div class="person-content">
           <div class="person-content-left">
             <IconLocation class="location-icon" />
@@ -82,18 +75,13 @@ onMounted(() => {
           </div>
           <div class="person-content-right">
             <div class="name-surname">{{ item.country }}</div>
-            <div class="date">28/06/2022</div>
+            <div class="city">{{ item.city }}</div>
           </div>
         </div>
       </a>
     </div>
-    <Pagination
-      v-if="paginationProps.data.length > 0"
-      :currentPage="paginationProps.currentPage"
-      :totalItems="searchedData.length"
-      :itemsPerPage="paginationProps.itemsPerPage"
-      @handleChange="changePage"
-    />
+    <Pagination v-if="paginationProps.data.length > 0" :currentPage="paginationProps.currentPage"
+      :totalItems="searchedData.length" :itemsPerPage="paginationProps.itemsPerPage" @handleChange="changePage" />
   </div>
   <div class="main-right">
     <SortButton />
@@ -153,6 +141,12 @@ onMounted(() => {
   align-items: center;
 }
 
+.person-content-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
 .location-icon {
   margin-right: 20px;
 }
@@ -160,13 +154,15 @@ onMounted(() => {
 .person-text-content {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: flex-start;
 }
+
 .person-text-content .person-text {
   color: #090a0a;
   font-size: 1rem;
   line-height: 1.25rem;
 }
+
 .person-text-content .person-sub-text {
   color: #72777a;
   font-size: 0.875rem;
@@ -180,12 +176,9 @@ onMounted(() => {
   color: #484848;
 }
 
-.date {
-  font-style: normal;
-  font-weight: 500;
-  font-size: 16px;
-  line-height: 16px;
-  color: #484848;
+.city {
+  color: #72777a;
+  font-size: 0.875rem;
 }
 
 .main-right {
