@@ -12,7 +12,7 @@ const handleReturn = () => {
   <div class="add-link-page">
     <div class="header">
       <a class="home-link" href="/"
-        ><img src="images/tesodev.jpg" alt="tesodev"
+        ><img src="/images/tesodev.jpg" alt="tesodev"
       /></a>
       <a class="list-page-link" @click="handleReturn">
         <IconArrow />
