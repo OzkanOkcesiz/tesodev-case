@@ -63,6 +63,7 @@ onMounted(() => {
         </ul>
 
         <router-link
+        v-if="searchedData.length > 3"
           class="show-more"
           :to="{ name: 'ListPage', query: { search: searchValue } }"
           >Show more..</router-link

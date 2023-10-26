@@ -1,5 +1,5 @@
 <template>
-  <transition name="fade">
+ 
     <div class="toastContainer">
       <div class="errors">
         <div class="title">{{ props.title }}</div>
@@ -10,7 +10,7 @@
       </div>
       <IconXCircle class="closeIcon" @click="emit('closeIcon')" />
     </div>
-  </transition>
+ 
 </template>
 
 <script setup lang="ts">
@@ -18,7 +18,7 @@ import { onMounted, ref } from 'vue';
 import IconXCircle from '@/components/icons/IconXCircle.vue';
 
 interface Props {
-  type: 'error' | 'success';
+  type?:"success" | "error" | string;
   title: string;
   message: string;
 }
@@ -48,15 +48,6 @@ onMounted(() => {
   min-width: 280px;
 }
 
-.toastContainer.fade-enter-active,
-.toastContainer.fade-leave-active {
-  transition: opacity 0.3s ease-in-out;
-}
-.toastContainer.fade-enter-from,
-.toastContainer.fade-leave-to {
-  opacity: 0;
-}
-
 .toastContainer .errors {
   display: flex;
   flex-direction: column;
@@ -78,6 +69,7 @@ onMounted(() => {
 .toastContainer .tagContainer {
   display: flex;
   flex-direction: column;
+  margin: 0 30px 0 auto;
 }
 .toastContainer .tagContainer .tag {
   display: grid;

@@ -72,20 +72,19 @@ const handleSubmit = () => {
   const getData = localStorage.getItem('data');
   const data = getData ? JSON.parse(getData) : [];
   const values = inputFields.reduce((acc: any, field: any) => {
-    acc[field.inputProps.name] = field.inputProps.value;
+    acc[field.inputProps.name] = field.inputProps.value
+    
     return acc;
   }, {});
-  try {
+
     axios
       .get(`https://tinyurl.com/api-create.php?url=${values['url']}`)
       .then((res) => {
-        console.log(res);
-
         localStorage.setItem(
           'data',
           JSON.stringify([
             ...data,
-            { ...values, id: new Date().getTime, url: res.data },
+            { ...values, id: new Date().getTime, company:'Tesodev', website: res.data },
           ])
         );
 
@@ -95,16 +94,16 @@ const handleSubmit = () => {
           type: 'success',
         };
         resetInputValues();
-      });
-  } catch (error: any) {
+      }).catch((error) => {
     toast.value = {
       title: 'Error',
-      message: error.message || 'Something went wrong',
+      message: 'Something went wrong',
       type: 'error',
     };
-  } finally {
+  })
+  .finally(() => {
     loading.value = false;
-  }
+  });
 };
 
 const handleCloseToast = () => {

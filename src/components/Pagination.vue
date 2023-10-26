@@ -30,11 +30,6 @@ const displayedPages = computed(() => {
 
   const totalPageNumbers = siblingCount + 5;
 
-  /*
-      Case 1:
-      If the number of pages is less than the page numbers we want to show in our
-      paginationComponent, we return the range [1..totalPageCount]
-    */
   if (totalPageNumbers >= calculatePageCount.value) {
     currentPage.value = 1;
     emit('handleChange', currentPage.value);
@@ -185,7 +180,6 @@ onMounted(() => {
 }
 
 .page-number {
-  /* padding: 4px 8px; */
   background: #ffffff;
   border: 1px solid #484848;
   border-radius: 4px;
