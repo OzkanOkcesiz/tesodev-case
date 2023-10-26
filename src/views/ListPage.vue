@@ -2,13 +2,14 @@
 import SearchList from '@/components/SearchList.vue'
 import AddNewRecord from '@/components/AddNewRecord.vue'
 import List from '@/components/List.vue'
+import { RouterLink } from 'vue-router'
 </script>
 
 <template>
   <div class="list-page">
     <header class="header">
       <div class="logo-box">
-        <a class="home-link" href="/"><img src="images/tesodev.jpg" alt="tesodev"></a>
+        <RouterLink class="home-link" to="/"><img src="/images/tesodev.jpg" alt="tesodev"></RouterLink>
       </div>
       <SearchList />
       <AddNewRecord />
