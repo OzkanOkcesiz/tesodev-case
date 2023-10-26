@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Toast from '@/components/Toast.vue';
+import Loading from '@/components/Loading.vue';
 import { ref, reactive, computed } from 'vue';
 import axios from 'axios';
 let inputFields = reactive([
@@ -74,22 +75,17 @@ const handleSubmit = () => {
     acc[field.inputProps.name] = field.inputProps.value;
     return acc;
   }, {});
-
-  console.log(values);
   try {
     axios
-      .get(`https://ulvis.net/API/write/get?url=${values['url']}&private=1`, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        },
-      })
+      .get(`https://tinyurl.com/api-create.php?url=${values['url']}`)
       .then((res) => {
+        console.log(res);
+
         localStorage.setItem(
           'data',
           JSON.stringify([
             ...data,
-            { ...values, id: new Date().getTime, url: res.data.url },
+            { ...values, id: new Date().getTime, url: res.data },
           ])
         );
 
@@ -98,6 +94,7 @@ const handleSubmit = () => {
           message: 'Link added successfully',
           type: 'success',
         };
+        resetInputValues();
       });
   } catch (error: any) {
     toast.value = {
@@ -157,7 +154,7 @@ const inputValidations = (name: string, value: string, field: any) => {
     } else if (!(value.length >= 2 && value.length <= 40)) {
       inputErrors.country.error = true;
       inputErrors.country.message =
-        'Country must be between 2 and 40 characters';
+        'Country must be between 4 and 60 characters';
     } else {
       inputErrors.country.error = false;
       inputErrors.country.message = '';
@@ -168,7 +165,7 @@ const inputValidations = (name: string, value: string, field: any) => {
       inputErrors.city.message = 'City is required';
     } else if (!(value.length >= 2 && value.length <= 40)) {
       inputErrors.city.error = true;
-      inputErrors.city.message = 'City must be between 2 and 40 characters';
+      inputErrors.city.message = 'City must be between 4 and 60 characters';
     } else {
       inputErrors.city.error = false;
       inputErrors.city.message = '';
@@ -196,6 +193,11 @@ const inputValidations = (name: string, value: string, field: any) => {
       inputErrors.url.message = '';
     }
   }
+};
+const resetInputValues = () => {
+  inputFields.forEach((field: any) => {
+    field.inputProps.value = '';
+  });
 };
 
 const submitButtonDisabled = computed(() => {
@@ -241,16 +243,17 @@ const submitButtonDisabled = computed(() => {
           class="add-btn"
           type="submit"
         >
-          Add
+          <Loading v-if="loading" />
+          <span v-else> Add</span>
         </button>
       </div>
     </form>
 
     <Toast
       v-if="Object.values(toast).some((value) => value)"
-      title="dawdawdaw"
-      message="dawdawdawdawdawdawdaw"
-      type="error"
+      :title="toast.title"
+      :message="toast.message"
+      :type="toast.type"
       @closeIcon="handleCloseToast"
     />
   </div>

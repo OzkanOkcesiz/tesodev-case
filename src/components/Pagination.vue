@@ -18,12 +18,11 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const currentPage = ref(getQuerystring('page') || 1);
-const perPage = ref(props.itemsPerPage);
 
 const DOTS = ref('...');
 
 const calculatePageCount = computed(() => {
-  return Math.ceil(props.totalItems / perPage.value);
+  return Math.ceil(props.totalItems / props.itemsPerPage);
 });
 
 const displayedPages = computed(() => {
@@ -82,6 +81,22 @@ const displayedPages = computed(() => {
   }
 });
 
+watch(
+  () => calculatePageCount.value,
+  () => {
+    if (currentPage.value > calculatePageCount.value) {
+      currentPage.value = calculatePageCount.value;
+      emit('handleChange', currentPage.value);
+      router.replace({
+        query: {
+          ...getQuerystring(),
+          page: currentPage.value,
+        },
+      });
+    }
+  }
+);
+
 const changePage = (newPage: number) => {
   if (newPage >= 1 && newPage <= calculatePageCount.value) {
     currentPage.value = newPage;
@@ -91,7 +106,6 @@ const changePage = (newPage: number) => {
         page: newPage,
       },
     });
-    // props?.handleChange(newPage);
 
     emit('handleChange', newPage);
   }
@@ -116,7 +130,6 @@ onMounted(() => {
     },
   });
   emit('handleChange', currentPage.value);
-  // props?.handleChange(currentPage.value);
 });
 </script>
 
